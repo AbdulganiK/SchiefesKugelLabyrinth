@@ -1,4 +1,4 @@
-using UnityEngine;
+Ôªøusing UnityEngine;
 
 
 /// <summary>
@@ -15,7 +15,7 @@ public class BoardController : MonoBehaviour
 
     [Tooltip("Drehgeschwindigkeit (Grad pro Sekunde).")]
     [Min(1f)]
-    public float rotationSpeedDegPerSec = 45f;
+    public float rotationSpeedDegPerSec = 3f;
 
     [Tooltip("Skalierung der Eingaben (Horizontal/Z und Vertical/X).")]
     public float horizontalScale = 1f;
@@ -36,7 +36,7 @@ public class BoardController : MonoBehaviour
         float h = Input.GetAxis("Horizontal") * horizontalScale;
         float v = Input.GetAxis("Vertical") * verticalScale;
 
-        // Zielwinkel‰nderung pro Frame (gleichm‰ﬂig mit deltaTime)
+        // Zielwinkel√§nderung pro Frame (gleichm√§√üig mit deltaTime)
         float step = rotationSpeedDegPerSec * Time.deltaTime;
 
         // X (vorne/hinten) folgt Vertical v
@@ -51,7 +51,7 @@ public class BoardController : MonoBehaviour
         currentRotation.x = Mathf.Clamp(currentRotation.x, -maxTiltDegrees, +maxTiltDegrees);
         currentRotation.y = Mathf.Clamp(currentRotation.y, -maxTiltDegrees, +maxTiltDegrees);
 
-        // Rotation anwenden: X und Z kippen, Y bleibt unver‰ndert
+        // Rotation anwenden: X und Z kippen, Y bleibt unver√§ndert
         Quaternion localTilt = Quaternion.Euler(currentRotation.x, 0f, currentRotation.y);
         transform.localRotation = baseRotation * localTilt;
     }
