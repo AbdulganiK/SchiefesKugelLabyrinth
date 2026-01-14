@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 
 public class Physik
@@ -8,33 +7,46 @@ public class Physik
         return masse * gravitation;
     }
 
-    public static Vector2 berechneHangabtriebskraft(float masse, float gravitation, float neigungsWinkelX, float neigungsWinkelY)
+    public static Vector2 berechneHangabtriebskraft(float masse, float gravitation,
+        float neigungsWinkelXGrad, float neigungsWinkelYGrad)
     {
-        if (neigungsWinkelX is > -90 and < 90 && neigungsWinkelY is > -90 and < 90)
+        if (neigungsWinkelXGrad is > -90 and < 90 && neigungsWinkelYGrad is > -90 and < 90)
         {
-            return new Vector2((float)(berechneGewichtskraft(masse, gravitation) * Math.Sin(neigungsWinkelX)), 
-                (float)(berechneGewichtskraft(masse, gravitation) * Math.Sin(neigungsWinkelY)));
+            float gx = Mathf.Sin(neigungsWinkelXGrad * Mathf.Deg2Rad);
+            float gy = Mathf.Sin(neigungsWinkelYGrad * Mathf.Deg2Rad);
+
+            float fg = berechneGewichtskraft(masse, gravitation);
+
+            return new Vector2(fg * gx, fg * gy);
         }
-        throw new Exception("Das ist kein gueltiger Winkel!");
+
+        throw new System.Exception("Das ist kein gueltiger Winkel!");
     }
 
-    public static float berechneNormalenKraft(float masse, float gravitation, float gesamtNeigungsWinkelSchiefeEbene)
+    // Normalkraft: Fn = m * g * cos(alpha)
+    public static float berechneNormalenKraft(float masse, float gravitation, float gesamtNeigungsWinkelGrad)
     {
-        return (float)(berechneGewichtskraft(masse, gravitation) * Math.Sin(gesamtNeigungsWinkelSchiefeEbene));
+        float alpha = gesamtNeigungsWinkelGrad * Mathf.Deg2Rad;
+        return berechneGewichtskraft(masse, gravitation) * Mathf.Cos(alpha);
     }
 
-    public static float berechneHaftReibungsKraft(float haftReibungsKoefiziente, float masse, float gravitation, float gesamtNeigungsWinkelSchiefeEbene)
+    public static float berechneHaftReibungsKraft(float haftReibungsKoefizient,
+        float masse, float gravitation, float gesamtNeigungsWinkelGrad)
     {
-        return haftReibungsKoefiziente * berechneNormalenKraft(masse, gravitation, gesamtNeigungsWinkelSchiefeEbene);
-    }
-    
-    public static float berechneRollReibungsKraft(float rollReibungsKoefiziente, float masse, float gravitation, float gesamtNeigungsWinkelSchiefeEbene)
-    {
-        return rollReibungsKoefiziente * berechneNormalenKraft(masse, gravitation, gesamtNeigungsWinkelSchiefeEbene);
+        return haftReibungsKoefizient *
+               berechneNormalenKraft(masse, gravitation, gesamtNeigungsWinkelGrad);
     }
 
-    public static float berechneStoßMitStarrenWand(float geschwindigkeitVorStoß)
+    public static float berechneRollReibungsKraft(float rollReibungsKoefizient,
+        float masse, float gravitation, float gesamtNeigungsWinkelGrad)
     {
-        return -geschwindigkeitVorStoß;
+        return rollReibungsKoefizient *
+               berechneNormalenKraft(masse, gravitation, gesamtNeigungsWinkelGrad);
+    }
+
+    // 1D-Stoß: Vorzeichen umdrehen
+    public static float berechneStossMitStarrerWand(float geschwindigkeitVorStoss)
+    {
+        return -geschwindigkeitVorStoss;
     }
 }
