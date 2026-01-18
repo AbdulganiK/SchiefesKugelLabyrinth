@@ -62,6 +62,7 @@ public class MaterialController : MonoBehaviour
     /// Setzt Material für Walls und Floors in einem Schritt.
     /// Übergib null, um einen Typ unverändert zu lassen.
     /// </summary>
+    [ContextMenu("Apply Materials")]
     public void SetMaterials(Material wallMat, Material floorMat)
     {
         if (wallMat != null) SetWallMaterial(wallMat);
@@ -69,11 +70,11 @@ public class MaterialController : MonoBehaviour
     }
 
     // ============================
-    // Komfort: Kontextmenü & Start
+    // 
     // ============================
 
     [ContextMenu("Apply Default Materials")]
-    private void ApplyDefaultMaterials()
+    public void ApplyDefaultMaterials()
     {
         SetMaterials(defaultWallMaterial, defaultFloorMaterial);
     }
