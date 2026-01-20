@@ -3003,6 +3003,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2791913131381972308, guid: c25c619ac7077cc42852a71b08de353a, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 8d9f535c7dea1104087a4e7e32aa6b87, type: 2}
     - target: {fileID: 3896547920564607732, guid: c25c619ac7077cc42852a71b08de353a, type: 3}
       propertyPath: m_IsActive
       value: 0
@@ -3867,7 +3871,7 @@ GameObject:
   - component: {fileID: 1192577197}
   m_Layer: 0
   m_Name: Kugel
-  m_TagString: Untagged
+  m_TagString: PlayerBall
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -3979,8 +3983,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Kugel
   masse: 1
   gravitation: 9.81
-  rollReibungsKoef: 0.05
+  kugelRadius: 0.5
   brett: {fileID: 651631173258394793}
+  brettHalbGroesseLocalXZ: {x: 5, y: 5}
+  brettOberflaechenOffset: 0
+  invertiereHangkraft: 1
+  stillSpeed: 0.001
+  rueckprallWand: 0
+  rueckprallBrett: 0
+  waende: []
+  solverIterations: 2
 --- !u!1001 &1197150710
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4517,6 +4529,101 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 1686553708838563876, guid: c25c619ac7077cc42852a71b08de353a, type: 3}
   m_PrefabInstance: {fileID: 1447358070}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1383603055
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1383603056}
+  - component: {fileID: 1383603059}
+  - component: {fileID: 1383603058}
+  - component: {fileID: 1383603057}
+  m_Layer: 0
+  m_Name: Winzone
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1383603056
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1383603055}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.3522, y: 3.02, z: -0.4888}
+  m_LocalScale: {x: 0.08, y: 5, z: 0.01}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 651631173258394793}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1383603057
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1383603055}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bab47913c4efa0248bb4b8832840c7ee, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WinZone
+  ballTag: PlayerBall
+--- !u!65 &1383603058
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1383603055}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1, y: 1, z: 1}
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!54 &1383603059
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1383603055}
+  serializedVersion: 5
+  m_Mass: 1
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 0
+  m_IsKinematic: 1
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
 --- !u!4 &1388679831 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 1686553708838563876, guid: c25c619ac7077cc42852a71b08de353a, type: 3}
@@ -4737,8 +4844,12 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3896547920564607732, guid: c25c619ac7077cc42852a71b08de353a, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 6056378830011580761, guid: c25c619ac7077cc42852a71b08de353a, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 2377852f756606640b96334838f1c528, type: 2}
     - target: {fileID: 7334567861596950439, guid: c25c619ac7077cc42852a71b08de353a, type: 3}
       propertyPath: m_Name
       value: Cell (80)
@@ -8612,6 +8723,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 5610057549425139441, guid: 9aaf10a8f4e117b40a6e7e204f477edb, type: 3}
       insertIndex: -1
       addedObject: {fileID: 773035404}
+    - targetCorrespondingSourceObject: {fileID: 5610057549425139441, guid: 9aaf10a8f4e117b40a6e7e204f477edb, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1383603056}
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 4891776190793669343, guid: 9aaf10a8f4e117b40a6e7e204f477edb, type: 3}
       insertIndex: -1
