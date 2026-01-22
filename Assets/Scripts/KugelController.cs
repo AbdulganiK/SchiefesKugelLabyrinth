@@ -15,7 +15,7 @@ public class KugelController : MonoBehaviour
     [Header("Kollision")]
     public Transform[] waende;
     [Range(0f, 1f)] public float rueckprallWand = 0.0f;
-    [Range(0f, 1f)] public float rueckprallBrett = 0.5f;
+    [Range(0f, 1f)] public float rueckprallBrett = 0.0f;
 
     private Vector3 position;
     private Vector3 velocity;
