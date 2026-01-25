@@ -2151,6 +2151,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 24e788936418cab488713e85e09ab3a0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UI
+  board: {fileID: 1685269060}
+  kugel: {fileID: 1192577192}
 --- !u!4 &515817365 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 1686553708838563876, guid: c25c619ac7077cc42852a71b08de353a, type: 3}
@@ -4036,7 +4038,7 @@ Transform:
   m_GameObject: {fileID: 963194225}
   serializedVersion: 2
   m_LocalRotation: {x: 0.7071068, y: 0, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: -2.5, y: 20.8, z: -1.53}
+  m_LocalPosition: {x: 4.41, y: 20.8, z: -1.08}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

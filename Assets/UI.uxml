@@ -1,14 +1,15 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
     <ui:VisualElement style="flex-grow: 1; justify-content: center;">
-        <ui:VisualElement name="Container" style="flex-grow: 1; align-self: flex-end; flex-basis: auto; width: 25%; background-color: rgb(149, 149, 149); justify-content: flex-start; align-content: flex-start; align-items: stretch;">
+        <ui:VisualElement name="Container" enabled="true" style="flex-grow: 1; align-self: flex-end; flex-basis: auto; width: 25%; background-color: rgb(149, 149, 149); justify-content: flex-start; align-content: flex-start; align-items: stretch; position: absolute; height: 100%; top: 1px;"/>
+        <ui:VisualElement name="main_window" enabled="true" style="flex-grow: 1; align-self: flex-end; flex-basis: auto; width: 25%; background-color: rgb(149, 149, 149); justify-content: flex-start; align-content: flex-start; align-items: stretch; position: relative; display: flex;">
             <ui:VisualElement style="flex-grow: 1; justify-content: flex-start; align-content: flex-start; align-items: center; flex-direction: row; border-bottom-width: 3px; border-bottom-color: rgb(89, 89, 89); flex-basis: auto; height: auto;">
                 <ui:Label text="Zeit:" style="height: 35px; width: 10%; -unity-text-align: middle-left;"/>
-                <ui:Label text="X s" name="time_text" style="height: 35px; width: 35%; -unity-text-align: middle-left;"/>
+                <ui:Label text="X ticks" name="time_text" style="height: 35px; width: 35%; -unity-text-align: middle-left;"/>
                 <ui:Button text="Einstellungen ⚙️" name="settings_button" style="width: 50%; background-color: rgb(89, 89, 89);"/>
             </ui:VisualElement>
             <ui:Label text="Neigungswinkel des Brettes" style="-unity-font-style: bold; font-size: 17px;"/>
-            <ui:SliderInt label="X-Achse - 0°" value="42" high-value="100"/>
-            <ui:SliderInt label="Y-Achse - 0°" value="42" high-value="100" style="border-bottom-width: 0; border-bottom-color: rgb(89, 89, 89);"/>
+            <ui:SliderInt label="X-Achse 0°" value="0" high-value="45" name="x_axis" low-value="-45"/>
+            <ui:SliderInt label="Y-Achse 0°" value="0" high-value="45" name="y_axis" low-value="-45" style="border-bottom-width: 0; border-bottom-color: rgb(89, 89, 89);"/>
             <ui:VisualElement style="flex-grow: 1; border-top-width: 3px; border-top-color: rgb(89, 89, 89); flex-direction: row; align-items: center; align-self: auto; align-content: flex-start; justify-content: center; border-bottom-width: 3px; border-bottom-color: rgb(89, 89, 89);">
                 <ui:Button text="Start/Stop" name="startstop_button" style="width: 45%; background-color: rgb(89, 89, 89);"/>
                 <ui:Button text="Reset" name="reset_button" style="width: 45%; background-color: rgb(89, 89, 89);"/>
@@ -35,6 +36,18 @@
                 <ui:Label text="X N" name="staticforce_text" style="height: 35px; width: 70%; -unity-text-align: middle-left;"/>
             </ui:VisualElement>
             <ui:Label text="Platz für Log Nachrichten" name="log" style="height: 50%;"/>
+        </ui:VisualElement>
+        <ui:VisualElement name="settings_window" enabled="false" style="flex-grow: 1; align-self: flex-end; flex-basis: auto; width: 25%; background-color: rgb(149, 149, 149); justify-content: flex-start; align-content: flex-start; align-items: stretch; position: absolute; height: 159px; top: 1px; display: flex; visibility: hidden;">
+            <ui:VisualElement style="flex-grow: 1; justify-content: flex-start; align-content: flex-start; align-items: center; flex-direction: row; border-bottom-width: 3px; border-bottom-color: rgb(89, 89, 89); flex-basis: auto; height: auto;">
+                <ui:Button text="&lt; Zurück" name="back_button" style="width: 50%; background-color: rgb(89, 89, 89);"/>
+                <ui:Label text="Einstellungen" style="height: 35px; width: 222px; -unity-text-align: middle-left;"/>
+            </ui:VisualElement>
+            <ui:VisualElement style="flex-grow: 1; justify-content: flex-start; align-content: flex-start; align-items: flex-start; flex-direction: row; border-bottom-width: 0; border-bottom-color: rgb(89, 89, 89); flex-basis: auto;">
+                <ui:EnumField label="Wandmaterial" value="Center" type="UnityEngine.TextAlignment, UnityEngine.TextRenderingModule" name="wall_material" style="width: 460px;"/>
+            </ui:VisualElement>
+            <ui:VisualElement style="flex-grow: 1; justify-content: flex-start; align-content: flex-start; align-items: flex-start; flex-direction: row; border-bottom-width: 0; border-bottom-color: rgb(89, 89, 89); flex-basis: auto;">
+                <ui:EnumField label="Bodenmaterial" value="Center" type="UnityEngine.TextAlignment, UnityEngine.TextRenderingModule" name="ground_material" style="width: 460px;"/>
+            </ui:VisualElement>
         </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>

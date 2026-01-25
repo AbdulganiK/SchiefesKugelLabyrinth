@@ -63,4 +63,14 @@ public class BoardController : MonoBehaviour
             ? Mathf.Min(current + maxDelta, target)
             : Mathf.Max(current - maxDelta, target);
     }
+
+    public float getRotationX()
+    {
+        return currentRotation.x;
+    }
+
+    public float getRotationY()
+    {
+        return currentRotation.y;
+    }
 }

@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public class KugelController : MonoBehaviour
@@ -19,6 +20,8 @@ public class KugelController : MonoBehaviour
 
     private Vector3 position;
     private Vector3 velocity;
+
+    private int ticks = 0;
     
     // World-Radius mit Skalierung
     private float KugelRadiusWorld {
@@ -81,6 +84,9 @@ public class KugelController : MonoBehaviour
         
         // Anwenden
         transform.position = position;
+        
+        //Ticks inkrementieren
+        ticks += 1;
     }
 
     bool IsOverBoard(Vector3 worldPos, float rWorld)
@@ -191,5 +197,20 @@ public class KugelController : MonoBehaviour
             Gizmos.color = Color.red;
             Gizmos.DrawWireSphere(position, KugelRadiusWorld);
         }
+    }
+
+    public Vector3 getPosition()
+    {
+        return position;
+    }
+
+    public double getVelocity()
+    {
+        return Math.Sqrt(Math.Pow(velocity.x,2)+Math.Pow(velocity.y,2)+Math.Pow(velocity.z,2));
+    }
+
+    public int getTicks()
+    {
+        return ticks;
     }
 }
