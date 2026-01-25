@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using Unity.Mathematics;
 
 public class KugelController : MonoBehaviour
 {
@@ -7,25 +8,30 @@ public class KugelController : MonoBehaviour
     public float masse = 1f;
     public float gravitation = 9.81f;
     public float kugelRadius = 0.5f;
-    
+
     [Header("Brett")]
     public Transform brett;
     public Vector2 brettHalbGroesseLocalXZ = new Vector2(5f, 5f);
     public bool invertiereHangkraft = true;
-    
+
+    [Header("Reibung (Coulomb)")]
+    [Range(0f, 2f)] public float muHaft = 0.35f;   // Haftreibung (static)
+    [Range(0f, 2f)] public float muGleit = 0.25f;  // Gleitreibung (kinetic)
+    public float stopSpeed = 0.05f;                // darunter "klebt" die Kugel leichter
+
     [Header("Kollision")]
     public Transform[] waende;
-    [Range(0f, 1f)] public float rueckprallWand = 0.0f;
+    [Range(0f, 1f)] public float rueckprallWand = 0.5f;
     [Range(0f, 1f)] public float rueckprallBrett = 0.0f;
 
     private Vector3 position;
     private Vector3 velocity;
-
     private int ticks = 0;
-    
-    // World-Radius mit Skalierung
-    private float KugelRadiusWorld {
-        get {
+
+    private float KugelRadiusWorld
+    {
+        get
+        {
             Vector3 scale = transform.lossyScale;
             return kugelRadius * Mathf.Max(scale.x, scale.y, scale.z);
         }
@@ -42,133 +48,181 @@ public class KugelController : MonoBehaviour
         float dt = Time.fixedDeltaTime;
         float rWorld = KugelRadiusWorld;
 
-        // Gravitation
+        // Gravitation (für Y)
         velocity.y += -gravitation * dt;
 
-        // Bewegung auf Brett
-        if (brett != null && IsOverBoard(position, rWorld))
+        bool aufBrett = (brett != null && IsOverBoard(position, rWorld));
+
+        if (aufBrett)
         {
-            // Winkel des Bretts (vereinfacht)
-            Vector3 euler = brett.eulerAngles;
-            float winkelX = NormalisiereWinkel(euler.x);
-            float winkelZ = NormalisiereWinkel(euler.z);
-            
-            // Hangabtriebskraft
-            Vector2 Fhang = BerechneHangabtriebskraft(winkelX, winkelZ);
-            if (invertiereHangkraft) Fhang = -Fhang;
-            
-            // Auf X/Z anwenden
-            Vector2 vXZ = new Vector2(velocity.x, velocity.z);
-            Vector2 aXZ = Fhang / masse;
-            vXZ += aXZ * dt;
-            
-            velocity.x = vXZ.x;
-            velocity.z = vXZ.y;
+            Vector3 normal = brett.up.normalized;
+
+            // Hang "Beschleunigung" in Brett-Ebene (aus Gravitation projiziert)
+            Vector3 gVec = Vector3.down * gravitation;
+            Vector3 aHang = Vector3.ProjectOnPlane(gVec, normal); // in Brett-Ebene
+            if (invertiereHangkraft) aHang = -aHang;
+
+            // Jetzt als Kraft rechnen: F = m * a
+            Vector3 Fhang = masse * aHang;
+
+            // Reibungskraft aus Normalkraft
+            Vector3 Freib = ComputeFrictionForce(normal, Fhang, dt);
+
+            // Gesamtbeschleunigung: a = (Fhang + Freib) / m
+            Vector3 a = (Fhang + Freib) / Mathf.Max(0.0001f, masse);
+
+            // Nur in Brett-Ebene anwenden (Y nicht verfälschen)
+            a = Vector3.ProjectOnPlane(a, normal);
+
+            velocity += a * dt;
         }
 
-        // Vorhersage der neuen Position
         Vector3 newPos = position + velocity * dt;
-        
-        // Kollisionserkennung für Wände
+
         newPos = BehandleWandKollisionen(position, newPos, rWorld);
-        
-        // Kollision mit Brett
+
         if (brett != null)
-        {
             newPos = BehandleBrettKollision(newPos, rWorld);
+
+        position = newPos;
+        transform.position = position;
+        ticks += 1;
+    }
+
+    // --- Reibung als Kraft: F_f = mu * N ---
+    Vector3 ComputeFrictionForce(Vector3 boardNormal, Vector3 Fhang, float dt)
+    {
+        // Normalkraft N = m * g * cos(theta)
+        float cos = Mathf.Clamp01(Mathf.Abs(Vector3.Dot(boardNormal, Vector3.up)));
+        float N = masse * gravitation * cos;
+
+        float FhaftMax = muHaft * N;
+        float Fgleit = muGleit * N;
+
+        // Tangentialgeschwindigkeit (in Brett-Ebene)
+        Vector3 vT = Vector3.ProjectOnPlane(velocity, boardNormal);
+        float speed = vT.magnitude;
+
+        // Tangentiale Hangkraft
+        Vector3 FhangT = Vector3.ProjectOnPlane(Fhang, boardNormal);
+        float FhangMag = FhangT.magnitude;
+
+        // 1) Haftreibung: wenn fast still und Hangkraft kleiner als Haft-Max -> komplett halten
+        if (speed < stopSpeed && FhangMag < FhaftMax)
+        {
+            // Reibung hebt Hangkraft auf (gleich groß, entgegengesetzt)
+            // => keine Beschleunigung in der Ebene
+            Vector3 Fhaft = -FhangT;
+
+            // Restliches "Zittern" weg: Tangentialvelocity auf 0 ziehen (impulsartig)
+            // als Kraft angenähert: F = m * dv/dt
+            Vector3 Fstop = -vT * (masse / Mathf.Max(1e-6f, dt));
+
+            // Optional begrenzen, damit es nicht explodiert:
+            float FstopMax = 5f * N;
+            if (Fstop.sqrMagnitude > FstopMax * FstopMax)
+                Fstop = Fstop.normalized * FstopMax;
+
+            return Fhaft + Fstop;
         }
 
-        // Geschwindigkeit basierend auf tatsächlicher Bewegung aktualisieren
-        velocity = (newPos - position) / dt;
-        position = newPos;
-        
-        // Anwenden
-        transform.position = position;
-        
-        //Ticks inkrementieren
-        ticks += 1;
+        // 2) Gleitreibung: immer entgegen der Bewegungsrichtung (oder entgegen Hangrichtung, falls speed ~ 0)
+        Vector3 dir;
+        if (speed > 1e-6f) dir = vT / speed;
+        else if (FhangMag > 1e-6f) dir = FhangT / FhangMag;
+        else dir = Vector3.zero;
+
+        Vector3 Fg = -dir * Fgleit;
+
+        return Fg;
     }
 
     bool IsOverBoard(Vector3 worldPos, float rWorld)
     {
         Vector3 localPos = brett.InverseTransformPoint(worldPos);
-        
-        // Mit Radius puffern
         float buffer = rWorld * 0.5f;
         return Mathf.Abs(localPos.x) <= brettHalbGroesseLocalXZ.x + buffer &&
                Mathf.Abs(localPos.z) <= brettHalbGroesseLocalXZ.y + buffer;
     }
 
-    Vector2 BerechneHangabtriebskraft(float winkelX, float winkelZ)
-    {
-        float Fx = masse * gravitation * Mathf.Sin(winkelZ * Mathf.Deg2Rad);
-        float Fz = masse * gravitation * Mathf.Sin(winkelX * Mathf.Deg2Rad);
-        return new Vector2(Fx, Fz);
-    }
-
+    // --- Wandkollisionen (Sphere vs AABB) ---
     Vector3 BehandleWandKollisionen(Vector3 oldPos, Vector3 newPos, float rWorld)
     {
         if (waende == null || waende.Length == 0)
             return newPos;
 
-        Vector3 rayDir = (newPos - oldPos).normalized;
-        float distance = Vector3.Distance(oldPos, newPos);
-        
-        // Raycast von alter zu neuer Position
-        RaycastHit[] hits = Physics.SphereCastAll(
-            oldPos, rWorld, rayDir, distance + rWorld
-        );
+        float3 p = (float3)newPos;
+        float rSq = rWorld * rWorld;
 
-        foreach (RaycastHit hit in hits)
+        for (int iter = 0; iter < 3; iter++)
         {
-            // Prüfen ob es eine unserer Wände ist
-            bool isWall = false;
-            foreach (Transform wand in waende)
+            bool hitAny = false;
+
+            foreach (var w in waende)
             {
-                if (wand != null && hit.transform.IsChildOf(wand))
+                if (w == null) continue;
+
+                AABB box = AabbFromTransform(w);
+
+                float distSq = box.DistanceSq(p);
+                if (distSq < rSq)
                 {
-                    isWall = true;
-                    break;
+                    hitAny = true;
+
+                    float3 closest = math.clamp(p, box.Min, box.Max);
+                    float3 delta = p - closest;
+
+                    float3 n;
+                    float lenSq = math.lengthsq(delta);
+
+                    if (lenSq > 1e-8f) n = delta / math.sqrt(lenSq);
+                    else
+                    {
+                        float3 local = p - box.Center;
+                        float3 ext = box.Extents;
+
+                        float px = ext.x - math.abs(local.x);
+                        float py = ext.y - math.abs(local.y);
+                        float pz = ext.z - math.abs(local.z);
+
+                        if (px <= py && px <= pz) n = new float3(math.sign(local.x), 0, 0);
+                        else if (py <= px && py <= pz) n = new float3(0, math.sign(local.y), 0);
+                        else n = new float3(0, 0, math.sign(local.z));
+                    }
+
+                    p = closest + n * rWorld;
+                    p += n * 0.0005f;
+
+                    // Slide + Bounce
+                    Vector3 n3 = new Vector3(n.x, n.y, n.z);
+                    float vN = Vector3.Dot(velocity, n3);
+                    if (vN < 0f)
+                    {
+                        Vector3 vInto = vN * n3;
+                        Vector3 vTang = velocity - vInto;
+                        Vector3 vBounce = -vInto * rueckprallWand;
+                        velocity = vTang + vBounce;
+                    }
                 }
             }
-            
-            if (!isWall) continue;
 
-            // Normale berechnen
-            Vector3 normal = hit.normal;
-            
-            // Position korrigieren
-            float penetration = rWorld - hit.distance;
-            if (penetration > 0)
-            {
-                newPos += normal * penetration;
-            }
-            
-            // Geschwindigkeit reflektieren
-            float vN = Vector3.Dot(velocity, normal);
-            if (vN < 0)
-            {
-                velocity = Vector3.Reflect(velocity, normal) * rueckprallWand;
-            }
+            if (!hitAny) break;
         }
 
-        return newPos;
+        return new Vector3(p.x, p.y, p.z);
     }
 
     Vector3 BehandleBrettKollision(Vector3 pos, float rWorld)
     {
-        // Strahl nach unten zum Brett
         Ray ray = new Ray(pos + Vector3.up * rWorld, Vector3.down);
         RaycastHit hit;
-        
+
         if (Physics.Raycast(ray, out hit, rWorld * 2f))
         {
             if (hit.transform.IsChildOf(brett))
             {
-                // Kugel auf Oberfläche positionieren
                 pos = hit.point + hit.normal * rWorld;
-                
-                // Geschwindigkeit anpassen
+
                 float vN = Vector3.Dot(velocity, hit.normal);
                 if (vN < 0)
                 {
@@ -182,14 +236,6 @@ public class KugelController : MonoBehaviour
         return pos;
     }
 
-    float NormalisiereWinkel(float angle)
-    {
-        angle %= 360f;
-        if (angle > 180f) angle -= 360f;
-        return angle;
-    }
-
-    // Hilfsmethode für visuelle Debugging
     void OnDrawGizmos()
     {
         if (Application.isPlaying)
@@ -199,18 +245,19 @@ public class KugelController : MonoBehaviour
         }
     }
 
-    public Vector3 getPosition()
-    {
-        return position;
-    }
+    public Vector3 getPosition() => position;
+    public double getVelocity() => Math.Sqrt(velocity.x * velocity.x + velocity.y * velocity.y + velocity.z * velocity.z);
+    public int getTicks() => ticks;
 
-    public double getVelocity()
+    static AABB AabbFromTransform(Transform t)
     {
-        return Math.Sqrt(Math.Pow(velocity.x,2)+Math.Pow(velocity.y,2)+Math.Pow(velocity.z,2));
-    }
+        var rend = t.GetComponent<Renderer>();
+        if (rend != null)
+        {
+            Bounds b = rend.bounds;
+            return new AABB { Center = (float3)b.center, Extents = (float3)b.extents };
+        }
 
-    public int getTicks()
-    {
-        return ticks;
+        return new AABB { Center = (float3)t.position, Extents = new float3(0.5f, 0.5f, 0.5f) };
     }
 }
