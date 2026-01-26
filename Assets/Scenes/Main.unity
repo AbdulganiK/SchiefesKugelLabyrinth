@@ -4533,6 +4533,9 @@ MonoBehaviour:
   brett: {fileID: 651631173258394793}
   brettHalbGroesseLocalXZ: {x: 5, y: 5}
   invertiereHangkraft: 1
+  muHaft: 0.35
+  muGleit: 0.25
+  stopSpeed: 0.05
   waende:
   - {fileID: 834668007}
   - {fileID: 2002176945}

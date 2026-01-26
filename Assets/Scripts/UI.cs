@@ -1,4 +1,5 @@
 using System;
+using DefaultNamespace;
 using UnityEngine;
 using UnityEngine.UIElements;
 using Vector3 = UnityEngine.Vector3;
@@ -22,6 +23,9 @@ public class UI : MonoBehaviour
     private Label log;
 
     private Button back_button;
+    private EnumField ball_material;
+    private EnumField wall_material;
+    private EnumField ground_material;
     
     public GameObject board;
     private BoardController boardController;
@@ -55,9 +59,41 @@ public class UI : MonoBehaviour
         log = root.Q<Label>("log");
 
         back_button = root.Q<Button>("back_button");
+        ball_material = root.Q<EnumField>("ball_material");
+        wall_material = root.Q<EnumField>("wall_material");
+        ground_material = root.Q<EnumField>("ground_material");
 
         settings_button.clicked += () => switchTab(false);
         back_button.clicked += () => switchTab(true);
+
+        ball_material.Init(CollisionMaterial.STAHL);
+        wall_material.Init(CollisionMaterial.HOLZ);
+        ground_material.Init(CollisionMaterial.HOLZ);
+
+        ball_material.RegisterCallback<ChangeEvent<Enum>>(evt =>
+        {
+            updateMaterials();
+        });
+        wall_material.RegisterCallback<ChangeEvent<Enum>>(evt =>
+        {
+            updateMaterials();
+        });
+        ground_material.RegisterCallback<ChangeEvent<Enum>>(evt =>
+        {
+            updateMaterials();
+        });
+    }
+
+    private void updateMaterials()
+    {
+        kugelController.rueckprallWand = (float)((int) (CollisionMaterial) ball_material.value + (int) (CollisionMaterial) wall_material.value) / 100;
+        kugelController.rueckprallBrett = (float)((int) (CollisionMaterial) ball_material.value + (int) (CollisionMaterial) ground_material.value) / 100;
+        Debug.Log(kugelController.rueckprallWand);
+        Debug.Log(kugelController.rueckprallBrett);
+        Debug.Log((int) (CollisionMaterial) ball_material.value);
+        Debug.Log((int) (CollisionMaterial) wall_material.value);
+        Debug.Log((int) (CollisionMaterial) ball_material.value + (int) (CollisionMaterial) wall_material.value);
+        Debug.Log((float)((int) (CollisionMaterial) ball_material.value + (int) (CollisionMaterial) wall_material.value)/100);
     }
 
     private void switchTab(bool isMainWindow)

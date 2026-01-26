@@ -37,10 +37,13 @@
             </ui:VisualElement>
             <ui:Label text="Platz für Log Nachrichten" name="log" style="height: 50%;"/>
         </ui:VisualElement>
-        <ui:VisualElement name="settings_window" enabled="false" style="flex-grow: 1; align-self: flex-end; flex-basis: auto; width: 25%; background-color: rgb(149, 149, 149); justify-content: flex-start; align-content: flex-start; align-items: stretch; position: absolute; height: 159px; top: 1px; display: flex; visibility: hidden;">
+        <ui:VisualElement name="settings_window" enabled="false" style="flex-grow: 1; align-self: flex-end; flex-basis: auto; width: 25%; background-color: rgb(149, 149, 149); justify-content: flex-start; align-content: flex-start; align-items: stretch; position: absolute; height: 221px; top: 1px; display: flex; visibility: hidden;">
             <ui:VisualElement style="flex-grow: 1; justify-content: flex-start; align-content: flex-start; align-items: center; flex-direction: row; border-bottom-width: 3px; border-bottom-color: rgb(89, 89, 89); flex-basis: auto; height: auto;">
                 <ui:Button text="&lt; Zurück" name="back_button" style="width: 50%; background-color: rgb(89, 89, 89);"/>
                 <ui:Label text="Einstellungen" style="height: 35px; width: 222px; -unity-text-align: middle-left;"/>
+            </ui:VisualElement>
+            <ui:VisualElement style="flex-grow: 1; justify-content: flex-start; align-content: flex-start; align-items: flex-start; flex-direction: row; border-bottom-width: 0; border-bottom-color: rgb(89, 89, 89); flex-basis: auto;">
+                <ui:EnumField label="Kugelmaterial" value="Center" type="UnityEngine.TextAlignment, UnityEngine.TextRenderingModule" name="ball_material" style="width: 460px;"/>
             </ui:VisualElement>
             <ui:VisualElement style="flex-grow: 1; justify-content: flex-start; align-content: flex-start; align-items: flex-start; flex-direction: row; border-bottom-width: 0; border-bottom-color: rgb(89, 89, 89); flex-basis: auto;">
                 <ui:EnumField label="Wandmaterial" value="Center" type="UnityEngine.TextAlignment, UnityEngine.TextRenderingModule" name="wall_material" style="width: 460px;"/>
