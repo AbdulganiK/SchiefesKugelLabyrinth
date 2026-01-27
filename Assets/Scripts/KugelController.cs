@@ -36,17 +36,38 @@ public class KugelController : MonoBehaviour
             return kugelRadius * Mathf.Max(scale.x, scale.y, scale.z);
         }
     }
+    public void resetBall()
+    {
+        Vector3 startPos = new Vector3(-4.5f, 0.5f, 4.5f);
+
+        velocity = Vector3.zero;
+        ticks = 0;
+
+        // Transform aktualisieren
+        position = startPos;
+        transform.position = startPos;
+
+        Debug.Log($"[RESET] id={GetInstanceID()} posField={position} tf={transform.position}");
+    }
+
+    private void OnDisable()
+    {
+        TickManager.Instance.OnTick -= HandleTick;
+    }
 
     void Start()
     {
+        TickManager.Instance.OnTick += HandleTick;
         position = transform.position;
         velocity = Vector3.zero;
     }
 
-    void FixedUpdate()
+    void HandleTick()
     {
         float dt = Time.fixedDeltaTime;
         float rWorld = KugelRadiusWorld;
+
+        position = transform.position;
 
         // Gravitation (für Y)
         velocity.y += -gravitation * dt;

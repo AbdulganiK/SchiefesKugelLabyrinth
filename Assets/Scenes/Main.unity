@@ -2153,6 +2153,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::UI
   board: {fileID: 1685269060}
   kugel: {fileID: 1192577192}
+  gameManager: {fileID: 2123136568}
 --- !u!4 &515817365 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 1686553708838563876, guid: c25c619ac7077cc42852a71b08de353a, type: 3}
@@ -4439,7 +4440,7 @@ SphereCollider:
   m_LayerOverridePriority: 0
   m_IsTrigger: 0
   m_ProvidesContacts: 0
-  m_Enabled: 0
+  m_Enabled: 1
   serializedVersion: 3
   m_Radius: 0.5
   m_Center: {x: 0, y: 0, z: 0}
@@ -4509,7 +4510,7 @@ Transform:
   m_GameObject: {fileID: 1192577192}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -3.59, y: 0.5, z: 4.5}
+  m_LocalPosition: {x: -4.42, y: 0.62, z: 4.35}
   m_LocalScale: {x: 0.5, y: 0.5, z: 0.5}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -5382,8 +5383,8 @@ Transform:
   m_GameObject: {fileID: 1383603055}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.3522, y: 3.02, z: -0.4888}
-  m_LocalScale: {x: 0.08, y: 5, z: 0.01}
+  m_LocalPosition: {x: -0.3522, y: 3.02, z: -0.4508}
+  m_LocalScale: {x: 0.07, y: 5, z: 0.1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 651631173258394793}
@@ -5401,6 +5402,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WinZone
   ballTag: PlayerBall
+  resetController: {fileID: 2123136572}
 --- !u!65 &1383603058
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -9319,6 +9321,8 @@ GameObject:
   m_Component:
   - component: {fileID: 2123136570}
   - component: {fileID: 2123136569}
+  - component: {fileID: 2123136571}
+  - component: {fileID: 2123136572}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -9358,6 +9362,44 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2123136571
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2123136568}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 564f4bfe8fdf80c449bc660298a9a455, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TickManager
+  ticksPerSecond: 60
+--- !u!114 &2123136572
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2123136568}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a5e2f16093abe22479251652e26bf272, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ResetController
+  kugel: {fileID: 1192577197}
+  brett: {fileID: 651631173258394794}
+  pauseTickManagerDuringReset: 1
+  ballSpawnPosition: {x: -4.5, y: 0.5, z: 4.5}
+  resetBoardToBaseRotation: 1
+  useIdentityIfNotBase: 0
+  resetKey: 114
+  OnBeforeReset:
+    m_PersistentCalls:
+      m_Calls: []
+  OnAfterReset:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!4 &2129128352 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 1686553708838563876, guid: c25c619ac7077cc42852a71b08de353a, type: 3}
@@ -9549,6 +9591,10 @@ PrefabInstance:
     - target: {fileID: 5610057549425139441, guid: 9aaf10a8f4e117b40a6e7e204f477edb, type: 3}
       propertyPath: m_LocalScale.x
       value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 5610057549425139441, guid: 9aaf10a8f4e117b40a6e7e204f477edb, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0.2
       objectReference: {fileID: 0}
     - target: {fileID: 5610057549425139441, guid: 9aaf10a8f4e117b40a6e7e204f477edb, type: 3}
       propertyPath: m_LocalPosition.x
@@ -9918,10 +9964,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cc246416e50ee0a45a906c76904fcda7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BoardController
-  maxTiltDegrees: 45
+  maxTiltDegrees: 90
   rotationSpeedDegPerSec: 30
   horizontalScale: 1
   verticalScale: 1
+  useRawInput: 1
+  inputExpo: 1.4
+  speedMultiplier: 1
 --- !u!1001 &5133093736729837031
 PrefabInstance:
   m_ObjectHideFlags: 0

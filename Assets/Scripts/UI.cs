@@ -31,11 +31,16 @@ public class UI : MonoBehaviour
     private BoardController boardController;
     public GameObject kugel;
     private KugelController kugelController;
+    public GameObject gameManager;
+    private TickManager tickManager;
+    private ResetController resetController;
 
     void Awake()
     {
         boardController = board.GetComponent<BoardController>();
         kugelController = kugel.GetComponent<KugelController>();
+        tickManager = gameManager.GetComponent<TickManager>();
+        resetController = gameManager.GetComponent<ResetController>();
     }
 
     private void OnEnable()
@@ -65,6 +70,8 @@ public class UI : MonoBehaviour
 
         settings_button.clicked += () => switchTab(false);
         back_button.clicked += () => switchTab(true);
+        startstop_button.clicked += () => tickManager.TogglePause();
+        reset_button.clicked += () => resetController.ResetAll();
 
         ball_material.Init(CollisionMaterial.STAHL);
         wall_material.Init(CollisionMaterial.HOLZ);
