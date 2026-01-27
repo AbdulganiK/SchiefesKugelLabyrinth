@@ -32,13 +32,6 @@ public class ResetController : MonoBehaviour
     public UnityEvent OnBeforeReset;
     public UnityEvent OnAfterReset;
 
-    private void Awake()
-    {
-        // Wenn nicht im Inspector gesetzt, automatisch finden
-        if (kugel == null) kugel = FindObjectOfType<KugelController>();
-        if (brett == null) brett = FindObjectOfType<BoardController>();
-    }
-
     private void Update()
     {
         if (resetKey != KeyCode.None && Input.GetKeyDown(resetKey))

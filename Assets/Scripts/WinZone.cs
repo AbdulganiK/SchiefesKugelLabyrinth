@@ -6,11 +6,8 @@ using UnityEngine.Events;
 [RequireComponent(typeof(Rigidbody))]
 public class WinZone : MonoBehaviour
 {
-    [Header("Erkennung (optional)")]
-    [SerializeField] private string ballTag = "PlayerBall"; // optional
-
     [Header("Referenzen")]
-    [SerializeField] private ResetController resetController; // GameManager → Reset Controller hier reinziehen
+    [SerializeField] private ResetController resetController;
 
     private Collider _col;
     private Rigidbody _rb;
