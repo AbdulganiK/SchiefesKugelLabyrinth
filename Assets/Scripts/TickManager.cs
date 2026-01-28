@@ -9,6 +9,9 @@ public class TickManager : MonoBehaviour
     [Header("Tick Settings")]
     public int ticksPerSecond = 60;
 
+    public GameObject UIDocument;
+    private UI UIController;
+
     private float tickInterval;
     private float tickTimer;
     private bool paused = false;
@@ -19,6 +22,7 @@ public class TickManager : MonoBehaviour
     {
         Instance = this;
         tickInterval = 1f / ticksPerSecond;
+        UIController = UIDocument.GetComponent<UI>();
     }
 
     private void Update()
@@ -36,7 +40,11 @@ public class TickManager : MonoBehaviour
 
     public void Pause() => paused = true;
     public void Resume() => paused = false;
-    public void TogglePause() => paused = !paused;
+    public void TogglePause()
+    {
+        paused = !paused;
+        UIController.setLogText("Simulation " + (paused ? "pausiert" : "gestartet"));
+    }
 
     public bool IsPaused() => paused;
 }

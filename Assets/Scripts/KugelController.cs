@@ -1,6 +1,9 @@
 using System;
+using System.Numerics;
 using UnityEngine;
 using Unity.Mathematics;
+using Vector2 = UnityEngine.Vector2;
+using Vector3 = UnityEngine.Vector3;
 
 public class KugelController : MonoBehaviour
 {
@@ -26,7 +29,11 @@ public class KugelController : MonoBehaviour
 
     private Vector3 position;
     private Vector3 velocity;
+    private Vector3 accelleration;
     private int ticks = 0;
+
+    private float FhaftValue;
+    private float FgleitValue;
 
     private float KugelRadiusWorld
     {
@@ -46,8 +53,6 @@ public class KugelController : MonoBehaviour
         // Transform aktualisieren
         position = startPos;
         transform.position = startPos;
-
-        Debug.Log($"[RESET] id={GetInstanceID()} posField={position} tf={transform.position}");
     }
 
     private void OnDisable()
@@ -70,7 +75,7 @@ public class KugelController : MonoBehaviour
         position = transform.position;
 
         // Gravitation (für Y)
-        velocity.y += -gravitation * dt;
+        velocity.y += -gravitation * masse * dt;
 
         bool aufBrett = (brett != null && IsOverBoard(position, rWorld));
 
@@ -90,12 +95,12 @@ public class KugelController : MonoBehaviour
             Vector3 Freib = ComputeFrictionForce(normal, Fhang, dt);
 
             // Gesamtbeschleunigung: a = (Fhang + Freib) / m
-            Vector3 a = (Fhang + Freib) / Mathf.Max(0.0001f, masse);
+            accelleration = (Fhang + Freib) / Mathf.Max(0.0001f, masse);
 
             // Nur in Brett-Ebene anwenden (Y nicht verfälschen)
-            a = Vector3.ProjectOnPlane(a, normal);
+            accelleration = Vector3.ProjectOnPlane(accelleration, normal);
 
-            velocity += a * dt;
+            velocity += accelleration * dt;
         }
 
         Vector3 newPos = position + velocity * dt;
@@ -117,8 +122,8 @@ public class KugelController : MonoBehaviour
         float cos = Mathf.Clamp01(Mathf.Abs(Vector3.Dot(boardNormal, Vector3.up)));
         float N = masse * gravitation * cos;
 
-        float FhaftMax = muHaft * N;
-        float Fgleit = muGleit * N;
+        FhaftValue = muHaft * N;
+        FgleitValue = muGleit * N;
 
         // Tangentialgeschwindigkeit (in Brett-Ebene)
         Vector3 vT = Vector3.ProjectOnPlane(velocity, boardNormal);
@@ -129,7 +134,7 @@ public class KugelController : MonoBehaviour
         float FhangMag = FhangT.magnitude;
 
         // 1) Haftreibung: wenn fast still und Hangkraft kleiner als Haft-Max -> komplett halten
-        if (speed < stopSpeed && FhangMag < FhaftMax)
+        if (speed < stopSpeed && FhangMag < FhaftValue)
         {
             // Reibung hebt Hangkraft auf (gleich groß, entgegengesetzt)
             // => keine Beschleunigung in der Ebene
@@ -153,7 +158,7 @@ public class KugelController : MonoBehaviour
         else if (FhangMag > 1e-6f) dir = FhangT / FhangMag;
         else dir = Vector3.zero;
 
-        Vector3 Fg = -dir * Fgleit;
+        Vector3 Fg = -dir * FgleitValue;
 
         return Fg;
     }
@@ -268,7 +273,10 @@ public class KugelController : MonoBehaviour
 
     public Vector3 getPosition() => position;
     public double getVelocity() => Math.Sqrt(velocity.x * velocity.x + velocity.y * velocity.y + velocity.z * velocity.z);
+    public double getAccelleration() => Math.Sqrt(accelleration.x * accelleration.x + accelleration.y * accelleration.y + accelleration.z * accelleration.z);
     public int getTicks() => ticks;
+    public float getFhaftValue() => FhaftValue;
+    public float getFgleitValue() => FgleitValue;
 
     static AABB AabbFromTransform(Transform t)
     {
