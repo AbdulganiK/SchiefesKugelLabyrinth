@@ -31,6 +31,7 @@ public class KugelController : MonoBehaviour
     private Vector3 velocity;
     private Vector3 accelleration;
     private int ticks = 0;
+    public Vector3 fHang;
 
     private float FhaftValue;
     private float FgleitValue;
@@ -90,6 +91,7 @@ public class KugelController : MonoBehaviour
 
             // Jetzt als Kraft rechnen: F = m * a
             Vector3 Fhang = masse * aHang;
+            fHang = Fhang;
 
             // Reibungskraft aus Normalkraft
             Vector3 Freib = ComputeFrictionForce(normal, Fhang, dt);
@@ -277,6 +279,7 @@ public class KugelController : MonoBehaviour
     public int getTicks() => ticks;
     public float getFhaftValue() => FhaftValue;
     public float getFgleitValue() => FgleitValue;
+    
 
     static AABB AabbFromTransform(Transform t)
     {
