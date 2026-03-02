@@ -26,6 +26,11 @@ public class KugelController : MonoBehaviour
     public Transform[] waende;
     [Range(0f, 1f)] public float rueckprallWand = 0.5f;
     [Range(0f, 1f)] public float rueckprallBrett = 0.0f;
+    
+    [Header("Kraftpfeile")]
+    public Transform xArrow;
+    public Transform yArrow;
+    public Transform zArrow;
 
     private Vector3 position;
     private Vector3 velocity;
@@ -114,6 +119,18 @@ public class KugelController : MonoBehaviour
 
         position = newPos;
         transform.position = position;
+
+        transform.rotation = brett.transform.rotation;
+        
+        xArrow.localPosition = new Vector3(-fHang.x, 0f, 0f);
+        xArrow.localScale = new Vector3(0.25f, -fHang.x, 0.25f);
+
+        yArrow.localPosition = new Vector3(0f, fHang.y, 0f);
+        yArrow.localScale = new Vector3(0.25f, fHang.y, 0.25f);
+
+        zArrow.localPosition = new Vector3(0f, 0f, -fHang.z);
+        zArrow.localScale = new Vector3(0.25f, -fHang.z, 0.25f);
+        
         ticks += 1;
     }
 
