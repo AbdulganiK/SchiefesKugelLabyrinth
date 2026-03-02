@@ -89,9 +89,19 @@ public class KugelController : MonoBehaviour
         {
             Vector3 normal = brett.up.normalized;
 
-            // Hang "Beschleunigung" in Brett-Ebene (aus Gravitation projiziert)
+            // Hang "Beschleunigung" in Brett-Ebene (aus Gravitation)
             Vector3 gVec = Vector3.down * gravitation;
-            Vector3 aHang = Vector3.ProjectOnPlane(gVec, normal); // in Brett-Ebene
+            float tiltAngle = Mathf.Acos(Mathf.Clamp01(Vector3.Dot(normal, Vector3.up)));
+            float gTangential = gravitation * Mathf.Sin(tiltAngle);
+            
+            // Richtung der stärksten Neigung in Brett-Ebene
+            Vector3 tiltDirection = Vector3.Cross(normal, Vector3.up);
+            if (tiltDirection.sqrMagnitude > 1e-6f)
+                tiltDirection = Vector3.Cross(tiltDirection, normal).normalized;
+            else
+                tiltDirection = Vector3.ProjectOnPlane(Vector3.forward, normal).normalized;
+            
+            Vector3 aHang = tiltDirection * gTangential;
             if (invertiereHangkraft) aHang = -aHang;
 
             // Jetzt als Kraft rechnen: F = m * a
@@ -105,7 +115,7 @@ public class KugelController : MonoBehaviour
             accelleration = (Fhang + Freib) / Mathf.Max(0.0001f, masse);
 
             // Nur in Brett-Ebene anwenden (Y nicht verfälschen)
-            accelleration = Vector3.ProjectOnPlane(accelleration, normal);
+            accelleration = accelleration - Vector3.Dot(accelleration, normal) * normal;
 
             velocity += accelleration * dt;
         }
@@ -122,14 +132,17 @@ public class KugelController : MonoBehaviour
 
         transform.rotation = brett.transform.rotation;
         
-        xArrow.localPosition = new Vector3(-fHang.x, 0f, 0f);
-        xArrow.localScale = new Vector3(0.25f, -fHang.x, 0.25f);
+        // Pfeile in Brett-Koordinaten anzeigen (von oben betrachtet)
+        Vector3 fHangLocal = brett.InverseTransformDirection(fHang);
+        
+        xArrow.localPosition = new Vector3(fHangLocal.x, 0f, 0f);
+        xArrow.localScale = new Vector3(0.25f, fHangLocal.x, 0.25f);
 
-        yArrow.localPosition = new Vector3(0f, fHang.y, 0f);
-        yArrow.localScale = new Vector3(0.25f, fHang.y, 0.25f);
+        yArrow.localPosition = new Vector3(0f, -fHangLocal.y*10000000, 0f);
+        yArrow.localScale = new Vector3(0.25f, -fHangLocal.y*10000000, 0.25f);
 
-        zArrow.localPosition = new Vector3(0f, 0f, -fHang.z);
-        zArrow.localScale = new Vector3(0.25f, -fHang.z, 0.25f);
+        zArrow.localPosition = new Vector3(0f, 0f, fHangLocal.z);
+        zArrow.localScale = new Vector3(0.25f, fHangLocal.z, 0.25f);
         
         ticks += 1;
     }
@@ -137,19 +150,21 @@ public class KugelController : MonoBehaviour
     // --- Reibung als Kraft: F_f = mu * N ---
     Vector3 ComputeFrictionForce(Vector3 boardNormal, Vector3 Fhang, float dt)
     {
-        // Normalkraft N = m * g * cos(theta)
-        float cos = Mathf.Clamp01(Mathf.Abs(Vector3.Dot(boardNormal, Vector3.up)));
-        float N = masse * gravitation * cos;
+        // Brett-Winkel zur Horizontalen (vereinfacht)
+        float tiltAngle = Mathf.Acos(Mathf.Clamp01(Vector3.Dot(boardNormal, Vector3.up)));
+        
+        // Normalkraft N = m * g * cos(tiltAngle)
+        float N = masse * gravitation * Mathf.Cos(tiltAngle);
 
         FhaftValue = muHaft * N;
         FgleitValue = muGleit * N;
 
         // Tangentialgeschwindigkeit (in Brett-Ebene)
-        Vector3 vT = Vector3.ProjectOnPlane(velocity, boardNormal);
+        Vector3 vT = velocity - Vector3.Dot(velocity, boardNormal) * boardNormal;
         float speed = vT.magnitude;
 
-        // Tangentiale Hangkraft
-        Vector3 FhangT = Vector3.ProjectOnPlane(Fhang, boardNormal);
+        // Tangentiale Hangkraft (in Brett-Ebene)
+        Vector3 FhangT = Fhang - Vector3.Dot(Fhang, boardNormal) * boardNormal;
         float FhangMag = FhangT.magnitude;
 
         // 1) Haftreibung: wenn fast still und Hangkraft kleiner als Haft-Max -> komplett halten
