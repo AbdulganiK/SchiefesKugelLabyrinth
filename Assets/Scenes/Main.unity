@@ -9624,6 +9624,9 @@ MonoBehaviour:
   defaultWallMaterial: {fileID: 2100000, guid: 2377852f756606640b96334838f1c528, type: 2}
   defaultFloorMaterial: {fileID: 2100000, guid: 0cf9ce5dd7ab3f648b8d7084b4365c85, type: 2}
   floorScale: {x: 1, y: 0.1, z: 1}
+  stahl: {fileID: 2100000, guid: 3dacbd740a5d46742b63dc88b53ffa25, type: 2}
+  holz: {fileID: 2100000, guid: 2377852f756606640b96334838f1c528, type: 2}
+  gummi: {fileID: 2100000, guid: a065a8e75da0eb9439d38d663e54a8a4, type: 2}
 --- !u!4 &2123136570
 Transform:
   m_ObjectHideFlags: 0
