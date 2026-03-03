@@ -1,10 +1,6 @@
-﻿/// <summary>
-/// Minimaler Board-Controller: kippt das Board um X (vorne/hinten) und Z (links/rechts)
-/// entsprechend der Eingabe (WASD/Pfeiltasten).
-/// </summary>
-using UnityEngine;
+﻿using UnityEngine;
 
-[DisallowMultipleComponent] //Darf nur einmal angewendet werden
+[DisallowMultipleComponent]
 public class BoardController : MonoBehaviour
 {
     [Header("Parameter")]
@@ -14,27 +10,22 @@ public class BoardController : MonoBehaviour
 
     [Tooltip("Drehgeschwindigkeit (Grad pro Sekunde).")]
     [Min(1f)]
-    public float rotationSpeedDegPerSec = 120f; // höherer Default, damit es bei 60 TPS nicht träge wirkt
+    public float rotationSpeedDegPerSec = 120f;
 
-    [Tooltip("Skalierung der Eingaben (Horizontal/Z und Vertical/X).")]
     public float horizontalScale = 1f;
     public float verticalScale = 1f;
 
     [Header("Input")]
-    [Tooltip("Raw = direkter Input ohne Glättung.")]
     public bool useRawInput = true;
 
-    [Tooltip("Nichtlineare Verstärkung: 1 = linear, >1 = sensibel bei kleinen Werten, schneller bei großen.")]
     [Range(1f, 3f)]
     public float inputExpo = 1.4f;
 
-    [Tooltip("Zusätzlicher Faktor, um die Reaktionsgeschwindigkeit unabhängig vom Winkel zu erhöhen.")]
     [Range(0.5f, 4f)]
     public float speedMultiplier = 1.0f;
 
-    // interner Zustand
-    private Vector2 currentRotation;   // xRot (vorne/hinten), zRot (links/rechts)
-    private Quaternion baseRotation;   // Startrotation als Offset
+    private Vector2 currentRotation;
+    private Quaternion baseRotation; 
 
     private void Awake()
     {
@@ -43,7 +34,6 @@ public class BoardController : MonoBehaviour
 
     private void OnEnable()
     {
-        // Sicherstellen, dass TickManager existiert
         if (TickManager.Instance != null)
             TickManager.Instance.OnTick += HandleTick;
     }
@@ -56,43 +46,34 @@ public class BoardController : MonoBehaviour
 
     public void ResetBoard()
     {
-        // interne Rotationswerte zurücksetzen
         currentRotation = Vector2.zero;
-
-        // Brett in Ausgangsrotation versetzen
         transform.localRotation = baseRotation;
     }
 
     private void HandleTick()
     {
-        //Tick-basiertes berechnen
         float tickDt = 1f / Mathf.Max(1, TickManager.Instance.ticksPerSecond);
 
-        // Eingaben holen
+        //Eingabe
         float h = (useRawInput ? Input.GetAxisRaw("Horizontal") : Input.GetAxis("Horizontal")) * horizontalScale;
         float v = (useRawInput ? Input.GetAxisRaw("Vertical") : Input.GetAxis("Vertical")) * verticalScale;
 
-        // Optionale exponentielle Kurve für bessere Steuerbarkeit:
-        // kleine Werte feinfühlig, große Werte stärker
         h = ApplyExpo(h, inputExpo);
         v = ApplyExpo(v, inputExpo);
 
         // Zielwinkel
-        float targetX = v * maxTiltDegrees;   // X (vorne/hinten) folgt Vertical
-        float targetZ = (-h) * maxTiltDegrees; // Z (links/rechts) folgt Horizontal (invertiert intuitiver)
+        float targetX = v * maxTiltDegrees;   
+        float targetZ = (-h) * maxTiltDegrees; 
 
         // Schritt in Grad pro Tick
         float step = rotationSpeedDegPerSec * tickDt * speedMultiplier;
 
-        // Clamped, geschmeidige Annäherung je Tick
         currentRotation.x = MoveTowardsAngle(currentRotation.x, targetX, step);
         currentRotation.y = MoveTowardsAngle(currentRotation.y, targetZ, step);
 
-        // Sicherheits-Clamp (numerische Stabilität)
         currentRotation.x = Mathf.Clamp(currentRotation.x, -maxTiltDegrees, +maxTiltDegrees);
         currentRotation.y = Mathf.Clamp(currentRotation.y, -maxTiltDegrees, +maxTiltDegrees);
 
-        // Rotation anwenden: X und Z kippen, Y bleibt unverändert
         Quaternion localTilt = Quaternion.Euler(currentRotation.x, 0f, currentRotation.y);
         transform.localRotation = baseRotation * localTilt;
     }

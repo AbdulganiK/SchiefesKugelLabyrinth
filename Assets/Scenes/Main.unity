@@ -9651,7 +9651,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 564f4bfe8fdf80c449bc660298a9a455, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TickManager
-  ticksPerSecond: 275
+  ticksPerSecond: 120
   UIDocument: {fileID: 511901128}
 --- !u!114 &2123136572
 MonoBehaviour:

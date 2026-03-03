@@ -49,9 +49,6 @@ public class ResetController : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Setzt Kugel und Brett in einem Schritt zur�ck.
-    /// </summary>
     public void ResetAll()
     {
         OnBeforeReset?.Invoke();
@@ -66,7 +63,7 @@ public class ResetController : MonoBehaviour
             wasPaused = true;
         }
 
-        // --- Kugel zur�cksetzen ---
+        // Kugel zurücksetzen
         if (kugel != null)
         {
             kugel.transform.position = ballSpawnPosition;
@@ -83,7 +80,7 @@ public class ResetController : MonoBehaviour
             Debug.LogWarning("[ResetController] Kein KugelController gefunden.");
         }
 
-        // Brett zur�cksetzen
+        // Brett zurücksetzen
         if (brett != null)
         {
             if (resetBoardToBaseRotation)

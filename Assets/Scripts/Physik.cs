@@ -3,14 +3,13 @@ using System;
 
 public static class Physik
 {
-    // ✅ Konstanten (kannst du anpassen)
-    public const float HAFT_REIBUNG_KOEF = 0.30f; // µ_H
-    public const float ROLL_REIBUNG_KOEF = 0.05f; // µ_R
+    // Konstanten (parametrisierbar in GUI durch Materialien)
+    public const float HAFT_REIBUNG_KOEF = 0.30f;
+    public const float ROLL_REIBUNG_KOEF = 0.05f;
 
     public static float berechneGewichtskraft(float masse, float gravitation)
         => masse * gravitation;
 
-    // neigungsWinkelXGrad/YGrad: Grad
     public static Vector2 berechneHangabtriebskraft(float masse, float gravitation,
         float neigungsWinkelXGrad, float neigungsWinkelYGrad)
     {
@@ -23,10 +22,9 @@ public static class Physik
 
             return new Vector2(fg * sx, fg * sy);
         }
-        throw new Exception("Das ist kein gueltiger Winkel!");
+        throw new Exception("Kein gueltiger Winkel!");
     }
 
-    // alphaGrad: Gesamt-Neigungswinkel (Grad)
     public static float berechneNormalenKraft(float masse, float gravitation, float alphaGrad)
     {
         float fg = berechneGewichtskraft(masse, gravitation);
@@ -45,7 +43,6 @@ public static class Physik
         return rollReibungsKoefizient * berechneNormalenKraft(masse, gravitation, alphaGrad);
     }
 
-    // 1D-Stoß (Normalrichtung): kehrt Vorzeichen um (perfekt elastisch ohne Verluste)
     public static float berechneStoßMitStarrenWand(float geschwindigkeitVorStoß)
         => -geschwindigkeitVorStoß;
 }

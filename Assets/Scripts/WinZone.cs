@@ -18,7 +18,6 @@ public class WinZone : MonoBehaviour
 
     private void Reset()
     {
-        // Wird automatisch aufgerufen, wenn du das Script hinzufügst
         _col = GetComponent<Collider>();
         if (_col != null) _col.isTrigger = true;
 
@@ -32,7 +31,6 @@ public class WinZone : MonoBehaviour
 
     private void Awake()
     {
-        // Referenzen sicherstellen (falls im Inspector nicht gesetzt)
         _col = GetComponent<Collider>();
         _rb = GetComponent<Rigidbody>();
         UIController = UIDocument.GetComponent<UI>();

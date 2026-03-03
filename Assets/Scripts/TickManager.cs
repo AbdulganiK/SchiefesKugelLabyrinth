@@ -7,7 +7,7 @@ public class TickManager : MonoBehaviour
     public static TickManager Instance { get; private set; }
 
     [Header("Tick Settings")]
-    public int ticksPerSecond = 60;
+    public int ticksPerSecond = 120;
 
     public GameObject UIDocument;
     private UI UIController;

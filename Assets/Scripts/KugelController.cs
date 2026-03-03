@@ -79,7 +79,7 @@ public class KugelController : MonoBehaviour
 
         position = transform.position;
 
-        // Gravitation (für Y)
+        // Gravitation (für Y, weil Unity cool ist ig)
         velocity.y += -gravitation * masse * dt;
 
         bool aufBrett = (brett != null && IsOverBoard(position, rWorld));
