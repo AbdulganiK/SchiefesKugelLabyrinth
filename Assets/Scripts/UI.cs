@@ -38,6 +38,7 @@ public class UI : MonoBehaviour
     public GameObject gameManager;
     private TickManager tickManager;
     private ResetController resetController;
+    private MaterialController materialController;
 
     void Awake()
     {
@@ -45,6 +46,7 @@ public class UI : MonoBehaviour
         kugelController = kugel.GetComponent<KugelController>();
         tickManager = gameManager.GetComponent<TickManager>();
         resetController = gameManager.GetComponent<ResetController>();
+        materialController = gameManager.GetComponent<MaterialController>();
     }
 
     private void OnEnable()
@@ -103,6 +105,12 @@ public class UI : MonoBehaviour
     {
         kugelController.rueckprallWand = (float)((int) (CollisionMaterial) ball_material.value + (int) (CollisionMaterial) wall_material.value) / 100;
         kugelController.rueckprallBrett = (float)((int) (CollisionMaterial) ball_material.value + (int) (CollisionMaterial) ground_material.value) / 100;
+
+        var ball = (CollisionMaterial)ball_material.value;
+        var wall = (CollisionMaterial)wall_material.value;
+        var ground = (CollisionMaterial)ground_material.value;
+
+        materialController.HandleMatChange(ball, wall, ground);
     }
 
     private void switchTab(bool isMainWindow)
