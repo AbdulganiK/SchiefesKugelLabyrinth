@@ -1,6 +1,9 @@
 using System;
+using System.Numerics;
 using UnityEngine;
 using Unity.Mathematics;
+using Vector2 = UnityEngine.Vector2;
+using Vector3 = UnityEngine.Vector3;
 
 public class KugelController : MonoBehaviour
 {
@@ -15,18 +18,28 @@ public class KugelController : MonoBehaviour
     public bool invertiereHangkraft = true;
 
     [Header("Reibung (Coulomb)")]
-    [Range(0f, 2f)] public float muHaft = 0.35f;   // Haftreibung (static)
-    [Range(0f, 2f)] public float muGleit = 0.25f;  // Gleitreibung (kinetic)
-    public float stopSpeed = 0.05f;                // darunter "klebt" die Kugel leichter
+    [Range(0f, 2f)] public float muHaft = 0.35f;   
+    [Range(0f, 2f)] public float muGleit = 0.25f;  
+    public float stopSpeed = 0.05f;               
 
     [Header("Kollision")]
     public Transform[] waende;
     [Range(0f, 1f)] public float rueckprallWand = 0.5f;
     [Range(0f, 1f)] public float rueckprallBrett = 0.0f;
+    
+    [Header("Kraftpfeile")]
+    public Transform xArrow;
+    public Transform yArrow;
+    public Transform zArrow;
 
     private Vector3 position;
     private Vector3 velocity;
+    private Vector3 accelleration;
     private int ticks = 0;
+    public Vector3 fHang;
+
+    private float FhaftValue;
+    private float FgleitValue;
 
     private float KugelRadiusWorld
     {
@@ -43,11 +56,8 @@ public class KugelController : MonoBehaviour
         velocity = Vector3.zero;
         ticks = 0;
 
-        // Transform aktualisieren
         position = startPos;
         transform.position = startPos;
-
-        Debug.Log($"[RESET] id={GetInstanceID()} posField={position} tf={transform.position}");
     }
 
     private void OnDisable()
@@ -70,7 +80,7 @@ public class KugelController : MonoBehaviour
         position = transform.position;
 
         // Gravitation (für Y)
-        velocity.y += -gravitation * dt;
+        velocity.y += -gravitation * masse * dt;
 
         bool aufBrett = (brett != null && IsOverBoard(position, rWorld));
 
@@ -78,24 +88,29 @@ public class KugelController : MonoBehaviour
         {
             Vector3 normal = brett.up.normalized;
 
-            // Hang "Beschleunigung" in Brett-Ebene (aus Gravitation projiziert)
             Vector3 gVec = Vector3.down * gravitation;
-            Vector3 aHang = Vector3.ProjectOnPlane(gVec, normal); // in Brett-Ebene
+            float tiltAngle = Mathf.Acos(Mathf.Clamp01(Vector3.Dot(normal, Vector3.up)));
+            float gTangential = gravitation * Mathf.Sin(tiltAngle);
+            
+            Vector3 tiltDirection = Vector3.Cross(normal, Vector3.up);
+            if (tiltDirection.sqrMagnitude > 1e-6f)
+                tiltDirection = Vector3.Cross(tiltDirection, normal).normalized;
+            else
+                tiltDirection = Vector3.ProjectOnPlane(Vector3.forward, normal).normalized;
+            
+            Vector3 aHang = tiltDirection * gTangential;
             if (invertiereHangkraft) aHang = -aHang;
 
-            // Jetzt als Kraft rechnen: F = m * a
             Vector3 Fhang = masse * aHang;
+            fHang = Fhang;
 
-            // Reibungskraft aus Normalkraft
             Vector3 Freib = ComputeFrictionForce(normal, Fhang, dt);
 
-            // Gesamtbeschleunigung: a = (Fhang + Freib) / m
-            Vector3 a = (Fhang + Freib) / Mathf.Max(0.0001f, masse);
+            accelleration = (Fhang + Freib) / Mathf.Max(0.0001f, masse);
 
-            // Nur in Brett-Ebene anwenden (Y nicht verfälschen)
-            a = Vector3.ProjectOnPlane(a, normal);
+            accelleration = accelleration - Vector3.Dot(accelleration, normal) * normal;
 
-            velocity += a * dt;
+            velocity += accelleration * dt;
         }
 
         Vector3 newPos = position + velocity * dt;
@@ -107,39 +122,46 @@ public class KugelController : MonoBehaviour
 
         position = newPos;
         transform.position = position;
+
+        transform.rotation = brett.transform.rotation;
+        
+        Vector3 fHangLocal = brett.InverseTransformDirection(fHang);
+        
+        xArrow.localPosition = new Vector3(fHangLocal.x, 0f, 0f);
+        xArrow.localScale = new Vector3(0.25f, fHangLocal.x, 0.25f);
+
+        yArrow.localPosition = new Vector3(0f, -fHangLocal.y*10000000, 0f);
+        yArrow.localScale = new Vector3(0.25f, -fHangLocal.y*10000000, 0.25f);
+
+        zArrow.localPosition = new Vector3(0f, 0f, fHangLocal.z);
+        zArrow.localScale = new Vector3(0.25f, fHangLocal.z, 0.25f);
+        
         ticks += 1;
     }
 
-    // --- Reibung als Kraft: F_f = mu * N ---
     Vector3 ComputeFrictionForce(Vector3 boardNormal, Vector3 Fhang, float dt)
     {
-        // Normalkraft N = m * g * cos(theta)
-        float cos = Mathf.Clamp01(Mathf.Abs(Vector3.Dot(boardNormal, Vector3.up)));
-        float N = masse * gravitation * cos;
+        float tiltAngle = Mathf.Acos(Mathf.Clamp01(Vector3.Dot(boardNormal, Vector3.up)));
+        
+        float N = masse * gravitation * Mathf.Cos(tiltAngle);
 
-        float FhaftMax = muHaft * N;
-        float Fgleit = muGleit * N;
+        FhaftValue = muHaft * N;
+        FgleitValue = muGleit * N;
 
-        // Tangentialgeschwindigkeit (in Brett-Ebene)
-        Vector3 vT = Vector3.ProjectOnPlane(velocity, boardNormal);
+        Vector3 vT = velocity - Vector3.Dot(velocity, boardNormal) * boardNormal;
         float speed = vT.magnitude;
 
-        // Tangentiale Hangkraft
-        Vector3 FhangT = Vector3.ProjectOnPlane(Fhang, boardNormal);
+        Vector3 FhangT = Fhang - Vector3.Dot(Fhang, boardNormal) * boardNormal;
         float FhangMag = FhangT.magnitude;
 
-        // 1) Haftreibung: wenn fast still und Hangkraft kleiner als Haft-Max -> komplett halten
-        if (speed < stopSpeed && FhangMag < FhaftMax)
+        if (speed < stopSpeed && FhangMag < FhaftValue)
         {
-            // Reibung hebt Hangkraft auf (gleich groß, entgegengesetzt)
-            // => keine Beschleunigung in der Ebene
+            
             Vector3 Fhaft = -FhangT;
 
-            // Restliches "Zittern" weg: Tangentialvelocity auf 0 ziehen (impulsartig)
-            // als Kraft angenähert: F = m * dv/dt
+           
             Vector3 Fstop = -vT * (masse / Mathf.Max(1e-6f, dt));
 
-            // Optional begrenzen, damit es nicht explodiert:
             float FstopMax = 5f * N;
             if (Fstop.sqrMagnitude > FstopMax * FstopMax)
                 Fstop = Fstop.normalized * FstopMax;
@@ -147,13 +169,12 @@ public class KugelController : MonoBehaviour
             return Fhaft + Fstop;
         }
 
-        // 2) Gleitreibung: immer entgegen der Bewegungsrichtung (oder entgegen Hangrichtung, falls speed ~ 0)
         Vector3 dir;
         if (speed > 1e-6f) dir = vT / speed;
         else if (FhangMag > 1e-6f) dir = FhangT / FhangMag;
         else dir = Vector3.zero;
 
-        Vector3 Fg = -dir * Fgleit;
+        Vector3 Fg = -dir * FgleitValue;
 
         return Fg;
     }
@@ -166,7 +187,6 @@ public class KugelController : MonoBehaviour
                Mathf.Abs(localPos.z) <= brettHalbGroesseLocalXZ.y + buffer;
     }
 
-    // --- Wandkollisionen (Sphere vs AABB) ---
     Vector3 BehandleWandKollisionen(Vector3 oldPos, Vector3 newPos, float rWorld)
     {
         if (waende == null || waende.Length == 0)
@@ -214,7 +234,6 @@ public class KugelController : MonoBehaviour
                     p = closest + n * rWorld;
                     p += n * 0.0005f;
 
-                    // Slide + Bounce
                     Vector3 n3 = new Vector3(n.x, n.y, n.z);
                     float vN = Vector3.Dot(velocity, n3);
                     if (vN < 0f)
@@ -268,7 +287,11 @@ public class KugelController : MonoBehaviour
 
     public Vector3 getPosition() => position;
     public double getVelocity() => Math.Sqrt(velocity.x * velocity.x + velocity.y * velocity.y + velocity.z * velocity.z);
+    public double getAccelleration() => Math.Sqrt(accelleration.x * accelleration.x + accelleration.y * accelleration.y + accelleration.z * accelleration.z);
     public int getTicks() => ticks;
+    public float getFhaftValue() => FhaftValue;
+    public float getFgleitValue() => FgleitValue;
+    
 
     static AABB AabbFromTransform(Transform t)
     {

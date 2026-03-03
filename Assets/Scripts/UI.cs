@@ -6,6 +6,8 @@ using Vector3 = UnityEngine.Vector3;
 
 public class UI : MonoBehaviour
 {
+    private String[] logBacklog = new String[3];
+    
     private VisualElement main_window;
     private VisualElement settings_window;
     
@@ -26,6 +28,8 @@ public class UI : MonoBehaviour
     private EnumField ball_material;
     private EnumField wall_material;
     private EnumField ground_material;
+    private TextField mass;
+    private TextField gravitation;
     
     public GameObject board;
     private BoardController boardController;
@@ -67,6 +71,10 @@ public class UI : MonoBehaviour
         ball_material = root.Q<EnumField>("ball_material");
         wall_material = root.Q<EnumField>("wall_material");
         ground_material = root.Q<EnumField>("ground_material");
+        mass = root.Q<TextField>("mass");
+        mass.value = kugelController.masse.ToString();
+        gravitation = root.Q<TextField>("gravitation");
+        gravitation.value = kugelController.gravitation.ToString();
 
         settings_button.clicked += () => switchTab(false);
         back_button.clicked += () => switchTab(true);
@@ -95,12 +103,6 @@ public class UI : MonoBehaviour
     {
         kugelController.rueckprallWand = (float)((int) (CollisionMaterial) ball_material.value + (int) (CollisionMaterial) wall_material.value) / 100;
         kugelController.rueckprallBrett = (float)((int) (CollisionMaterial) ball_material.value + (int) (CollisionMaterial) ground_material.value) / 100;
-        Debug.Log(kugelController.rueckprallWand);
-        Debug.Log(kugelController.rueckprallBrett);
-        Debug.Log((int) (CollisionMaterial) ball_material.value);
-        Debug.Log((int) (CollisionMaterial) wall_material.value);
-        Debug.Log((int) (CollisionMaterial) ball_material.value + (int) (CollisionMaterial) wall_material.value);
-        Debug.Log((float)((int) (CollisionMaterial) ball_material.value + (int) (CollisionMaterial) wall_material.value)/100);
     }
 
     private void switchTab(bool isMainWindow)
@@ -109,6 +111,16 @@ public class UI : MonoBehaviour
         main_window.visible = isMainWindow;
         settings_window.SetEnabled(!isMainWindow);
         settings_window.visible = !isMainWindow;
+        if (isMainWindow)
+        {
+            kugelController.masse = Convert.ToSingle(mass.value);
+            kugelController.gravitation = Convert.ToSingle(gravitation.value);
+        }
+        else
+        {
+            mass.value = kugelController.masse.ToString();
+            gravitation.value = kugelController.gravitation.ToString();
+        }
     }
 
     private void Update()
@@ -124,5 +136,19 @@ public class UI : MonoBehaviour
         position_text.text = Math.Round(position.x, 2) + "/" + Math.Round(position.y, 2) + "/" + Math.Round(position.z, 2);
 
         speed_text.text = Math.Round(kugelController.getVelocity(), 2) + "m/s";
+        acceleration_text.text = Math.Round(kugelController.getAccelleration(), 2) + "m/s²";
+        rollforce_text.text = Math.Round(kugelController.getFhaftValue(), 2) + "N";
+        staticforce_text.text = Math.Round(kugelController.getFgleitValue(), 2) + "N";
+    }
+
+    public void setLogText(String logText)
+    {
+        log.text = "";
+        
+        logBacklog[2] = logBacklog[1];
+        logBacklog[1] = logBacklog[0];
+        logBacklog[0] = logText;
+        
+        log.text += "<size=20>" + logBacklog[0] + "</size>\n" + logBacklog[1] + "\n" + logBacklog[2];
     }
 }

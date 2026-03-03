@@ -9,6 +9,9 @@ public class WinZone : MonoBehaviour
     [Header("Referenzen")]
     [SerializeField] private ResetController resetController;
 
+    public GameObject UIDocument;
+    private UI UIController;
+
     private Collider _col;
     private Rigidbody _rb;
 
@@ -32,6 +35,7 @@ public class WinZone : MonoBehaviour
         // Referenzen sicherstellen (falls im Inspector nicht gesetzt)
         _col = GetComponent<Collider>();
         _rb = GetComponent<Rigidbody>();
+        UIController = UIDocument.GetComponent<UI>();
 
         if (_col != null) _col.isTrigger = true;
         if (_rb != null)
@@ -47,7 +51,7 @@ public class WinZone : MonoBehaviour
         var ball = other.GetComponentInParent<KugelController>();
         if (ball != null)
         {
-            Debug.Log("<color=#00FF00><b><size=20>[WIN] Gewonnen!</size></b></color>");
+            UIController.setLogText("<color=#00FF00><b><size=20>[WIN] Gewonnen!</size></b></color>");
             resetController?.ResetAll();
         }
     }

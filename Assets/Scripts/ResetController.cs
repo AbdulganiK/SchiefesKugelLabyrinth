@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -11,6 +12,9 @@ public class ResetController : MonoBehaviour
     [Tooltip("Brett-Controller. Wird automatisch gesucht, wenn leer.")]
     public BoardController brett;
 
+    public GameObject UIDocument;
+    private UI UIController;
+
     [Header("Reset-Optionen")]
     [Tooltip("TickManager beim Reset kurz pausieren (empfohlen).")]
     public bool pauseTickManagerDuringReset = true;
@@ -18,19 +22,24 @@ public class ResetController : MonoBehaviour
     [Tooltip("Kugel auf diese Position setzen.")]
     public Vector3 ballSpawnPosition = new Vector3(-4.5f, 0.5f, 4.5f);
 
-    [Tooltip("Brett auf die gespeicherte BaseRotation (Startrotation) zurücksetzen.")]
+    [Tooltip("Brett auf die gespeicherte BaseRotation (Startrotation) zurï¿½cksetzen.")]
     public bool resetBoardToBaseRotation = true;
 
     [Tooltip("Falls nicht BaseRotation: Brett auf Quaternion.identity setzen (komplett flach).")]
     public bool useIdentityIfNotBase = false;
 
     [Header("Hotkey")]
-    [Tooltip("Taste für Reset. Optional.")]
+    [Tooltip("Taste fï¿½r Reset. Optional.")]
     public KeyCode resetKey = KeyCode.R;
 
     [Header("Events")]
     public UnityEvent OnBeforeReset;
     public UnityEvent OnAfterReset;
+
+    public void Awake()
+    {
+        UIController = UIDocument.GetComponent<UI>();
+    }
 
     private void Update()
     {
@@ -41,7 +50,7 @@ public class ResetController : MonoBehaviour
     }
 
     /// <summary>
-    /// Setzt Kugel und Brett in einem Schritt zurück.
+    /// Setzt Kugel und Brett in einem Schritt zurï¿½ck.
     /// </summary>
     public void ResetAll()
     {
@@ -57,19 +66,16 @@ public class ResetController : MonoBehaviour
             wasPaused = true;
         }
 
-        // --- Kugel zurücksetzen ---
+        // --- Kugel zurï¿½cksetzen ---
         if (kugel != null)
         {
             kugel.transform.position = ballSpawnPosition;
 
             
-            var resetMethod = typeof(KugelController).GetMethod("ResetBall");
+            var resetMethod = typeof(KugelController).GetMethod("resetBall");
             if (resetMethod != null)
             {
                 resetMethod.Invoke(kugel, null);
-            }
-            else
-            {
             }
         }
         else
@@ -77,7 +83,7 @@ public class ResetController : MonoBehaviour
             Debug.LogWarning("[ResetController] Kein KugelController gefunden.");
         }
 
-        // Brett zurücksetzen
+        // Brett zurï¿½cksetzen
         if (brett != null)
         {
             if (resetBoardToBaseRotation)
@@ -108,6 +114,7 @@ public class ResetController : MonoBehaviour
         }
 
         OnAfterReset?.Invoke();
+        UIController.setLogText("Simulation zurÃ¼ckgesetzt");
     }
 }
 
